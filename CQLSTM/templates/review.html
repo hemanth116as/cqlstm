@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Review Analyzer</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Set background to white */
+        body {
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Navbar */
+        .navbar {
+            width: 100%;
+            background: linear-gradient(45deg, #007BFF, #00D4FF);
+            padding: 15px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 15px;
+            position: relative;
+            transition: 0.3s ease;
+        }
+
+        .navbar a:hover {
+            transform: scale(1.1);
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: bold;
+            color: black;
+            margin-bottom: 20px;
+        }
+
+        /* Enlarged Form */
+        .container {
+            background: white;
+            padding: 40px; /* Increased padding */
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 500px; /* Increased width */
+            text-align: center;
+            margin-top: 80px;
+        }
+
+        input {
+            width: 95%; /* Increased width */
+            padding: 15px; /* Increased padding */
+            margin: 15px 0;
+            border: 1px solid rgb(200, 200, 200);
+            border-radius: 8px;
+            font-size: 18px; /* Bigger font */
+            background: white;
+            color: black;
+            transition: 0.3s ease-in-out;
+        }
+
+        input:focus {
+            border-color: #00D4FF;
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px; /* Increased padding */
+            background: linear-gradient(45deg, #007BFF, #00D4FF);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px; /* Bigger font */
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: linear-gradient(45deg, #0056b3, #0099cc);
+            transform: scale(1.05);
+            box-shadow: 0px 0px 10px rgba(0, 100, 200, 0.5);
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 22px;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            color: black;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <a href="/home_page">Home</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/review">Review My Words</a>
+        <a href="/logout">Logout</a>
+    </div>
+
+    <h1>Sentiment Review Analyzer</h1>
+
+    <div class="container">
+        <input type="text" id="sentence" placeholder="Enter your review...">
+        <button onclick="analyzeSentiment()">Review</button>
+        <p id="result"></p>
+    </div>
+
+    <script>
+        function analyzeSentiment() {
+            var sentence = document.getElementById('sentence').value;
+            var resultText = document.getElementById('result');
+
+            var veryPositiveWords = ["excellent", "amazing", "outstanding", "fantastic", "incredible"];
+            var positiveWords = ["good", "great", "nice", "happy", "satisfied"];
+            var negativeWords = ["bad", "poor", "disappointed", "not good", "not happy"];
+            var veryNegativeWords = ["terrible", "horrible", "awful", "worst", "disgusting"];
+
+            let sentimentScore = 0;
+
+            veryPositiveWords.forEach(word => {
+                if (sentence.toLowerCase().includes(word)) sentimentScore += 2;
+            });
+
+            positiveWords.forEach(word => {
+                if (sentence.toLowerCase().includes(word)) sentimentScore += 1;
+            });
+
+            negativeWords.forEach(word => {
+                if (sentence.toLowerCase().includes(word)) sentimentScore -= 1;
+            });
+
+            veryNegativeWords.forEach(word => {
+                if (sentence.toLowerCase().includes(word)) sentimentScore -= 2;
+            });
+
+            // Show loading text first
+            resultText.innerHTML = "⏳ Analyzing...";
+            resultText.style.opacity = "1";
+            resultText.style.transform = "translateY(0)";
+            resultText.style.color = "black";
+
+            setTimeout(() => {
+                if (sentimentScore >= 2) {
+                    resultText.innerHTML = "😍 Very Positive Review! ⭐⭐⭐⭐⭐";
+                    resultText.style.color = "green";
+                } else if (sentimentScore === 1) {
+                    resultText.innerHTML = "🙂 Positive Review! ⭐⭐⭐⭐";
+                    resultText.style.color = "limegreen";
+                } else if (sentimentScore === 0) {
+                    resultText.innerHTML = "😐 Neutral Review! ⭐⭐⭐";
+                    resultText.style.color = "orange";
+                } else if (sentimentScore === -1) {
+                    resultText.innerHTML = "😠 Negative Review! ⭐⭐";
+                    resultText.style.color = "red";
+                } else {
+                    resultText.innerHTML = "😡 Very Negative Review! ⭐";
+                    resultText.style.color = "darkred";
+                }
+            }, 1200);
+        }
+    </script>
+
+</body>
+</html>

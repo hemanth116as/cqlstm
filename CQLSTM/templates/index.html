@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Review Analyzer</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body {
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            justify-content: center;
+        }
+
+        .navbar {
+            width: 100%;
+            background: linear-gradient(45deg, #007BFF, #00D4FF);
+            padding: 15px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: 0.3s ease;
+        }
+
+        h1 { font-size: 32px; font-weight: bold; color: black; margin-bottom: 20px; }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 500px;
+            text-align: center;
+            margin-top: 80px;
+        }
+
+        textarea {
+            width: 95%;
+            padding: 15px;
+            margin: 15px 0;
+            border: 1px solid rgb(200, 200, 200);
+            border-radius: 8px;
+            font-size: 18px;
+            min-height: 50px; /* Default height */
+            max-height: 200px; /* Limit height */
+            resize: none; /* Disable manual resizing */
+            overflow-y: hidden; /* Hide scrollbar */
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #007BFF, #00D4FF);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        button:hover { background: linear-gradient(45deg, #0056b3, #0099cc); }
+
+        #result {
+            margin-top: 20px;
+            font-size: 22px;
+            font-weight: bold;
+            color: black;
+        }
+
+        /* Loader animation */
+        .loader {
+            display: none;
+            margin: 10px auto;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Shake animation for empty input */
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="/home_page">Home</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/review">Review My Words</a>
+        <a href="/logout">Logout</a>
+    </div>
+
+    <h1>Sentiment Review Analyzer</h1>
+
+    <div class="container">
+        <textarea id="sentence" placeholder="Enter your review..." oninput="adjustTextareaHeight()"></textarea>
+        <button id="reviewBtn" onclick="analyzeSentiment()">Review</button>
+        <div class="loader" id="loader"></div>
+        <p id="result"></p>  
+    </div>
+
+    <script>
+        function adjustTextareaHeight() {
+            let textarea = document.getElementById("sentence");
+            textarea.style.height = "50px"; // Reset to default before resizing
+            textarea.style.height = textarea.scrollHeight + "px"; // Set new height
+        }
+
+        function analyzeSentiment() {
+            let inputText = document.getElementById("sentence").value;
+            let resultText = document.getElementById("result");
+            let loader = document.getElementById("loader");
+            let reviewBtn = document.getElementById("reviewBtn");
+
+            if (inputText.trim() === "") {
+                resultText.innerHTML = "⚠️ Please enter a review!";
+                resultText.style.color = "black";
+                reviewBtn.classList.add("shake");
+                setTimeout(() => reviewBtn.classList.remove("shake"), 500);
+                return;
+            }
+
+            // Show loading spinner and clear result text
+            loader.style.display = "block";
+            resultText.innerHTML = "";
+
+            fetch("/predict", {
+                method: "POST",
+                body: new URLSearchParams({ sentence: inputText }),
+                headers: { "Content-Type": "application/x-www-form-urlencoded" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                loader.style.display = "none";
+                resultText.innerHTML = formatRating(data.rating);
+            })
+            .catch(error => {
+                loader.style.display = "none";
+                resultText.innerHTML = "❌ Error processing request!";
+                resultText.style.color = "red";
+            });
+        }
+
+        function formatRating(rating) {
+            switch (rating) {
+                case 4:
+                    return "😍 Very Positive Review! ⭐⭐⭐⭐⭐";
+                case 3:
+                    return "🙂 Positive Review! ⭐⭐⭐⭐";
+                case 2:
+                    return "😐 Neutral Review! ⭐⭐⭐";
+                case 1:
+                    return "😠 Negative Review! ⭐⭐";
+                case 0:
+                    return "😡 Very Negative Review! ⭐";
+                default:
+                    return "⚠️ Invalid Rating!";
+            }
+        }
+    </script>
+
+</body>
+</html>
